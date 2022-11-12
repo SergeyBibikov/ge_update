@@ -17,7 +17,7 @@ val geoDir = "$esd/Documents/Georgian"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val files = arrayOf("alphabet", "numbers", "phrases", "words")
+    private val files = arrayOf("alphabet", "numbers", "phrases", "words", "grammar")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
