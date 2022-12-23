@@ -1,0 +1,14 @@
+{
+    "directories": [
+        "grammar"
+    ],
+    "files": [
+        "alphabet",
+        "numbers",
+        "phrases",
+        "words",
+        "grammar",
+        "grammar/postpositions",
+        "grammar/verbPrepositions"
+    ]
+}
