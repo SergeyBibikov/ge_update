@@ -20,7 +20,7 @@ interface Some {
 
 suspend fun downloadFile(url: String): InputStream {
     return Retrofit.Builder()
-        .baseUrl("https://raw.githubusercontent.com")
+        .baseUrl("https://raw.githubusercontent.com/SergeyBibikov/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(Some::class.java)
@@ -33,8 +33,11 @@ data class Settings(val dirs: List<String>, val files: List<String>)
 suspend fun parseDownloadSettings(): Settings {
     val dirs = mutableListOf<String>()
     val files = mutableListOf<String>()
-    val str = downloadFile("/SergeyBibikov/ge_update/main/downloadSettings.json")
-    val obj = JSONObject(str.readBytes().commonToUtf8String())
+    val str = downloadFile("ge_update/main/downloadSettings.json")
+    val obj: JSONObject
+    str.use {
+        obj = JSONObject(str.readBytes().commonToUtf8String())
+    }
     obj.getJSONArray("directories").let {
         0.until(it.length()).forEach { i -> dirs.add(it.getString(i)) }
     }

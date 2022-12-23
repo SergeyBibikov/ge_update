@@ -14,25 +14,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.createDirectory
 
-
-val esd = Environment.getExternalStorageDirectory()
-val ROOT_DIR = "$esd/Documents/Georgian"
-
-fun getRelativeDirs(dirNames: List<String>): List<String> {
-    return dirNames.map { "$ROOT_DIR/$it" }
-}
-
-fun createDirs(dirsToCreate: List<String>) {
-    dirsToCreate.forEach {
-        Paths.get(it).toAbsolutePath().createDirectory()
-    }
-}
-
-fun createFile(input: InputStream?, fileName: String) {
-    val fName = Paths.get(fileName).toAbsolutePath()
-    Files.copy(input, fName)
-}
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -50,32 +31,15 @@ class MainActivity : AppCompatActivity() {
                 val dirs = getRelativeDirs(settings.dirs)
                 createDirs(listOf(ROOT_DIR).plus(dirs))
                 for (f in settings.files) {
-                    download(f)
+                    val i = downloadFile("ge-html/main/$f.html")
+                    i.use{
+                        createFile(
+                            i, "$ROOT_DIR/$f.html"
+                        )
+                    }
                 }
                 finishAndRemoveTask()
             }
         }
     }
-}
-
-fun download(file: String) {
-    val client = OkHttpClient()
-    val request = Request.Builder()
-        .url("https://raw.githubusercontent.com/SergeyBibikov/ge-html/main/$file.html")
-        .build()
-
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            TODO("Not yet implemented")
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            response.use {
-                if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                response.body?.byteStream().apply {
-                    createFile(this, "$ROOT_DIR/$file.html")
-                }
-            }
-        }
-    })
 }
