@@ -3,7 +3,6 @@
         "grammar"
     ],
     "files": [
-        "alphabet",
         "numbers",
         "phrases",
         "words",
