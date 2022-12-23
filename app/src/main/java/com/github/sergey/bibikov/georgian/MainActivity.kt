@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
         "numbers",
         "phrases",
         "words",
+        "grammar",
         "grammar/postpositions",
         "grammar/verbPrepositions",
     )
