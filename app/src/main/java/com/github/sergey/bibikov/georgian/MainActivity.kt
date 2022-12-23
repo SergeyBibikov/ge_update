@@ -5,29 +5,37 @@ import android.os.Environment
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.github.sergey.bibikov.georgian.databinding.ActivityMainBinding
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import okhttp3.*
 import java.io.IOException
+import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.createDirectory
 
 
 val esd = Environment.getExternalStorageDirectory()
-val geoDir = "$esd/Documents/Georgian"
-val grammarDir = "$geoDir/grammar"
+val ROOT_DIR = "$esd/Documents/Georgian"
+
+fun getRelativeDirs(dirNames: List<String>): List<String> {
+    return dirNames.map { "$ROOT_DIR/$it" }
+}
+
+fun createDirs(dirsToCreate: List<String>) {
+    dirsToCreate.forEach {
+        Paths.get(it).toAbsolutePath().createDirectory()
+    }
+}
+
+fun createFile(input: InputStream?, fileName: String) {
+    val fName = Paths.get(fileName).toAbsolutePath()
+    Files.copy(input, fName)
+}
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val files = arrayOf(
-        "alphabet",
-        "numbers",
-        "phrases",
-        "words",
-        "grammar",
-        "grammar/postpositions",
-        "grammar/verbPrepositions",
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,15 +44,16 @@ class MainActivity : AppCompatActivity() {
         val b = findViewById<Button>(R.id.b)
 
         b.setOnClickListener {
-            Runtime.getRuntime().exec("rm -rf $geoDir").waitFor()
-
-            Paths.get(geoDir).toAbsolutePath().createDirectory()
-            Paths.get(grammarDir).toAbsolutePath().createDirectory()
-
-            for (f in files) {
-                download(f)
+            MainScope().launch {
+                Runtime.getRuntime().exec("rm -rf $ROOT_DIR").waitFor()
+                val settings = parseDownloadSettings()
+                val dirs = getRelativeDirs(settings.dirs)
+                createDirs(listOf(ROOT_DIR).plus(dirs))
+                for (f in settings.files) {
+                    download(f)
+                }
+                finishAndRemoveTask()
             }
-            finishAndRemoveTask()
         }
     }
 }
@@ -64,8 +73,7 @@ fun download(file: String) {
             response.use {
                 if (!response.isSuccessful) throw IOException("Unexpected code $response")
                 response.body?.byteStream().apply {
-                    val fileName = Paths.get("$geoDir/$file.html").toAbsolutePath()
-                    Files.copy(this, fileName)
+                    createFile(this, "$ROOT_DIR/$file.html")
                 }
             }
         }
